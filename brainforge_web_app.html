@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BrainForge | Aptitude & Code Ninja</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        neon: {
+                            blue: '#00f3ff',
+                            purple: '#bc13fe',
+                            green: '#00ff66',
+                            red: '#ff0055',
+                            orange: '#ff6600',
+                            dark: '#0a0a12',
+                            panel: '#151522',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #050508;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(188, 19, 254, 0.1) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(0, 243, 255, 0.05) 0px, transparent 50%);
+            color: #ffffff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        .glass-panel {
+            background: rgba(21, 21, 34, 0.85);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .btn-hover-fx {
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-hover-fx::after {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%; width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            transition: all 0.5s ease;
+        }
+        
+        .btn-hover-fx:hover::after { left: 100%; }
+
+        .progress-bar-fill { transition: width 1s linear; }
+
+        .fade-in { animation: fadeIn 0.4s ease-out forwards; opacity: 0; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: rgba(10,10,18,0.5); }
+        ::-webkit-scrollbar-thumb { background: rgba(100, 100, 150, 0.5); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(0, 243, 255, 0.8); }
+
+        pre {
+            background: #0a0a12;
+            padding: 1.25rem;
+            border-radius: 0.75rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            overflow-x: auto;
+            color: #a5d6ff;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.5);
+            margin: 1rem 0;
+        }
+        
+        code .keyword { color: #ff7b72; }
+        code .type { color: #ff7b72; }
+        code .string { color: #a5d6ff; }
+        code .number { color: #79c0ff; }
+        code .comment { color: #8b949e; font-style: italic; }
+        code .func { color: #d2a8ff; }
+        code .op { color: #ffffff; }
+    </style>
+</head>
+<body class="font-sans flex flex-col selection:bg-neon-blue selection:text-black">
+
+    <header class="w-full glass-panel border-b border-white/10 sticky top-0 z-50 p-4 shadow-lg shadow-black/50">
+        <div class="max-w-6xl mx-auto flex justify-between items-center gap-4">
+            <div class="flex items-center gap-3 cursor-pointer group" onclick="resetToHome()">
+                <i class="fa-solid fa-brain text-neon-blue text-3xl group-hover:scale-110 transition-transform drop-shadow-[0_0_8px_rgba(0,243,255,0.8)]"></i>
+                <h1 class="text-2xl font-bold tracking-wider uppercase bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400 group-hover:to-white transition-colors">Brain<span class="text-neon-blue">Forge</span></h1>
+            </div>
+            <div class="text-sm font-mono text-gray-400 hidden md:block">Procedural Logic Engine v2.0</div>
+        </div>
+    </header>
+
+    <main class="flex-grow flex items-center justify-center p-4 max-w-6xl mx-auto w-full relative">
+        
+        <!-- Mode Selection View -->
+        <div id="view-mode-select" class="w-full grid grid-cols-1 md:grid-cols-2 gap-8 fade-in">
+            <button onclick="selectMode('aptitude')" class="btn-hover-fx glass-panel rounded-2xl p-10 flex flex-col items-center justify-center text-center border border-white/10 hover:border-neon-purple hover:shadow-[0_0_20px_rgba(188,19,254,0.3)] transition-all group">
+                <div class="w-24 h-24 rounded-full bg-neon-purple/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-[0_0_15px_rgba(188,19,254,0.3)]">
+                    <i class="fa-solid fa-shapes text-5xl text-neon-purple"></i>
+                </div>
+                <h2 class="text-3xl font-bold mb-3 text-white">Aptitude Arena</h2>
+                <p class="text-gray-400 mb-6 max-w-xs">Master combinatorial math, logical syllogisms, probability, and sequences.</p>
+                <div class="bg-white/5 px-4 py-2 rounded-lg border border-white/10 text-xs font-mono text-neon-purple">4 Difficulty Tiers</div>
+            </button>
+
+            <button onclick="selectMode('codeninja')" class="btn-hover-fx glass-panel rounded-2xl p-10 flex flex-col items-center justify-center text-center border border-white/10 hover:border-neon-orange hover:shadow-[0_0_20px_rgba(255,102,0,0.3)] transition-all group">
+                <div class="w-24 h-24 rounded-full bg-neon-orange/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-[0_0_15px_rgba(255,102,0,0.3)]">
+                    <i class="fa-solid fa-user-ninja text-5xl text-neon-orange"></i>
+                </div>
+                <h2 class="text-3xl font-bold mb-3 text-white">Code Ninja (C)</h2>
+                <p class="text-gray-400 mb-6 max-w-xs">Tackle pointers, macros, memory layouts, and tricky C logic operations.</p>
+                <div class="bg-white/5 px-4 py-2 rounded-lg border border-white/10 text-xs font-mono text-neon-orange">60s / Dedicated Timer</div>
+            </button>
+        </div>
+
+        <!-- Aptitude Setup View -->
+        <div id="view-aptitude-setup" class="w-full max-w-lg glass-panel rounded-2xl p-8 shadow-[0_0_30px_rgba(188,19,254,0.15)] hidden fade-in">
+            <button onclick="resetToHome()" class="text-gray-400 hover:text-white mb-6 transition-colors text-sm"><i class="fa-solid fa-arrow-left mr-2"></i> Back to Modes</button>
+            <h2 class="text-3xl font-bold mb-2 text-center text-neon-purple">Aptitude Arena</h2>
+            <p class="text-center text-sm text-gray-400 mb-8">Select sequence difficulty</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-8" id="difficulty-selector">
+                <button class="diff-btn w-full p-4 rounded-xl border border-white/20 bg-neon-dark hover:border-white transition-all text-left group active" data-diff="easy">
+                    <div class="font-bold text-white text-lg">Easy</div>
+                    <div class="text-xs text-neon-blue font-mono mt-1">10s / Core Logic</div>
+                </button>
+                <button class="diff-btn w-full p-4 rounded-xl border border-white/20 bg-neon-dark hover:border-white transition-all text-left group" data-diff="medium">
+                    <div class="font-bold text-white text-lg">Medium</div>
+                    <div class="text-xs text-neon-green font-mono mt-1">20s / 2-Step Math</div>
+                </button>
+                <button class="diff-btn w-full p-4 rounded-xl border border-white/20 bg-neon-dark hover:border-white transition-all text-left group" data-diff="hard">
+                    <div class="font-bold text-white text-lg">Hard</div>
+                    <div class="text-xs text-neon-purple font-mono mt-1">45s / Multi-Step</div>
+                </button>
+                <button class="diff-btn w-full p-4 rounded-xl border border-white/20 bg-neon-dark hover:border-white transition-all text-left group" data-diff="expert">
+                    <div class="font-bold text-white text-lg">Expert</div>
+                    <div class="text-xs text-neon-red font-mono mt-1">75s / Complex Tracing</div>
+                </button>
+            </div>
+
+            <button onclick="startAptitudeGame()" class="btn-hover-fx w-full py-4 rounded-xl font-bold text-lg bg-neon-purple text-white shadow-[0_0_15px_rgba(188,19,254,0.5)] hover:shadow-[0_0_25px_rgba(188,19,254,0.7)] flex justify-center items-center gap-2">
+                <i class="fa-solid fa-play"></i> Initialize Sequence
+            </button>
+        </div>
+
+        <!-- Game Play View -->
+        <div id="view-game" class="w-full max-w-3xl hidden my-8">
+            <div class="flex justify-between items-center mb-4 text-sm font-mono font-semibold px-2">
+                <div class="bg-neon-dark/90 px-4 py-2 rounded-lg border border-white/10 flex items-center gap-2 shadow-md">
+                    <span class="text-gray-400">NODE:</span> 
+                    <span id="game-progress" class="text-white">1/10</span>
+                </div>
+                <div id="game-mode-tag" class="text-neon-orange uppercase tracking-widest text-xs px-3 py-1 rounded bg-white/5 border border-white/10">Mode</div>
+            </div>
+
+            <div class="glass-panel rounded-2xl overflow-hidden shadow-[0_0_40px_rgba(0,0,0,0.8)] fade-in relative">
+                <!-- Progress Bar -->
+                <div class="w-full h-1.5 bg-neon-dark relative">
+                    <div id="timer-bar" class="h-full bg-white progress-bar-fill w-full"></div>
+                </div>
+                
+                <div class="p-6 md:p-10">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-6 border-b border-white/10 pb-4 gap-4">
+                        <span id="question-concept-tag" class="text-xs uppercase tracking-widest text-gray-300 font-mono bg-white/5 px-3 py-1.5 rounded border border-white/10">CONCEPT: --</span>
+                        <div id="timer-text" class="text-4xl font-mono font-bold text-white tracking-tighter">--s</div>
+                    </div>
+
+                    <div id="question-content" class="mb-10 text-gray-100 text-lg leading-relaxed">
+                        <!-- Procedural content injected here -->
+                    </div>
+
+                    <div id="options-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Options injected dynamically -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Summary View -->
+        <div id="view-summary" class="w-full max-w-4xl glass-panel rounded-2xl p-6 md:p-10 shadow-lg hidden my-8">
+            <div class="text-center mb-10 fade-in" style="animation-delay: 0.1s;">
+                <i id="summary-icon" class="fa-solid fa-trophy text-5xl mb-4 text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.5)]"></i>
+                <h2 class="text-4xl font-bold mb-2">Diagnostic Complete</h2>
+                <p class="text-gray-400 font-mono" id="summary-meta-text">Mode: -- | Difficulty: --</p>
+            </div>
+            
+            <div class="flex justify-center mb-10 fade-in" style="animation-delay: 0.2s;">
+                <div class="bg-neon-dark rounded-xl p-8 border border-white/10 flex flex-col items-center justify-center shadow-lg min-w-[250px]">
+                    <div class="text-7xl font-bold text-white mb-2 tracking-tighter" id="summary-score">0/10</div>
+                    <div class="text-xs text-gray-400 uppercase tracking-widest font-mono">Accuracy Rating</div>
+                </div>
+            </div>
+
+            <div class="fade-in" style="animation-delay: 0.3s;">
+                <h3 class="text-xl font-bold mb-4 border-b border-white/20 pb-2 flex items-center"><i class="fa-solid fa-clipboard-check mr-3 text-gray-400"></i> Step-by-Step Analysis</h3>
+                <div id="review-container" class="space-y-6 max-h-[60vh] overflow-y-auto pr-2 pb-4">
+                    <!-- Review items injected here -->
+                </div>
+            </div>
+
+            <div class="mt-8 pt-6 border-t border-white/10 fade-in text-center flex flex-wrap justify-center gap-4" style="animation-delay: 0.4s;">
+                <button onclick="resetToHome()" class="btn-hover-fx px-8 py-4 rounded-xl font-bold bg-white/10 text-white hover:bg-white/20 border border-white/20 transition-colors inline-block text-sm uppercase tracking-wider">
+                    Main Menu
+                </button>
+                <button id="btn-replay" class="btn-hover-fx px-8 py-4 rounded-xl font-bold bg-white text-black hover:bg-gray-200 transition-colors inline-block text-sm uppercase tracking-wider shadow-[0_0_15px_rgba(255,255,255,0.3)]">
+                    Generate New Permutation
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // CRITICAL TIMER CONFIGURATION
+        const TIMER_APTITUDE = { 'easy': 10, 'medium': 20, 'hard': 45, 'expert': 75 };
+        const TIMER_CODENINJA = 60;
+        const TOTAL_QUESTIONS = 10;
+
+        let state = {
+            mode: 'aptitude',
+            difficulty: 'easy',
+            questions: [],
+            currentIndex: 0,
+            score: 0,
+            timer: null,
+            timeLeft: 0,
+            userAnswers: [],
+            isTransitioning: false
+        };
+
+        // Utility Math Helpers
+        const rInt = (min, max) => Math.floor(Math.random() * (max - min + 1) + min);
+        const rItem = (arr) => arr[Math.floor(Math.random() * arr.length)];
+        
+        // Critical DOM Safety Helper - Prevents C code from breaking the HTML parser
+        const escapeHtml = (unsafe) => {
+            if (unsafe === null || unsafe === undefined) return '';
+            return unsafe.toString()
+                 .replace(/&/g, "&amp;")
+                 .replace(/</g, "&lt;")
+                 .replace(/>/g, "&gt;")
+                 .replace(/"/g, "&quot;")
+                 .replace(/'/g, "&#039;");
+        };
+
+        // C-Code Syntax Highlighter Helper
+        const formatCode = (codeStr) => {
+            let safeCode = escapeHtml(codeStr);
+            safeCode = safeCode.replace(/\b(int|char|void|float|double|return|while|for|if|else|switch|case|break|sizeof)\b/g, '<span class="keyword">$1</span>');
+            safeCode = safeCode.replace(/\b(printf|scanf|malloc|free)\b/g, '<span class="func">$1</span>');
+            safeCode = safeCode.replace(/(&quot;.*?&quot;)/g, '<span class="string">$1</span>'); // strings
+            safeCode = safeCode.replace(/(\/\/.*)/g, '<span class="comment">$1</span>'); // comments
+            return `<pre><code>${safeCode}</code></pre>`;
+        };
+
+        // Jitter Generator for Options
+        function generateOptions(correctAnswer, count, customTraps = []) {
+            let opts = new Set([correctAnswer.toString()]);
+            for (let t of customTraps) if (opts.size < count) opts.add(t.toString());
+            
+            let val = parseFloat(correctAnswer);
+            let isNumeric = !isNaN(val) && !correctAnswer.toString().match(/[a-zA-Z]/);
+
+            let attempts = 0;
+            while (opts.size < count && attempts < 100) {
+                attempts++;
+                if (isNumeric) {
+                    let jitter = rInt(-15, 15);
+                    if (jitter === 0) continue;
+                    let fake = val + jitter;
+                    if(Number.isInteger(val)) fake = Math.round(fake);
+                    opts.add(fake.toString());
+                } else {
+                    opts.add("Err_" + rInt(10,99)); 
+                }
+            }
+            return Array.from(opts).sort(() => Math.random() - 0.5);
+        }
+
+        const genAptitude = [
+            (diff) => { // 1. Algebra
+                let a = rInt(3, 9), b = rInt(10, 40), x = rInt(2, 12);
+                let text, ans, exp;
+                if (diff === 'easy') {
+                    ans = b - a; text = `Solve for x:<br><span class="text-2xl text-neon-blue font-bold mt-2 inline-block">x + ${a} = ${b}</span>`;
+                    exp = `Isolate x by subtracting ${a} from both sides.\nx = ${b} - ${a}\nx = ${ans}`;
+                } else if (diff === 'medium') {
+                    let c = (a * x) + b; ans = x;
+                    text = `Solve for x:<br><span class="text-2xl text-neon-blue font-bold mt-2 inline-block">${a}x + ${b} = ${c}</span>`;
+                    exp = `1. Subtract ${b}: ${a}x = ${c - b}\n2. Divide by ${a}: x = ${ans}`;
+                } else {
+                    let c = rInt(2, a-1), d = (a * x + b) - (c * x); ans = x;
+                    text = `Solve for x:<br><span class="text-2xl text-neon-blue font-bold mt-2 inline-block">${a}x + ${b} = ${c}x + ${d}</span>`;
+                    exp = `1. Subtract ${c}x: ${a-c}x + ${b} = ${d}\n2. Subtract ${b}: ${a-c}x = ${d-b}\n3. Divide by ${a-c}: x = ${ans}`;
+                }
+                return { conceptId: 'Algebraic_Isolation', text, options: generateOptions(ans, 4), answer: ans.toString(), explanation: exp };
+            },
+            (diff) => { // 2. Sequences
+                let seq = [], ans, exp, text;
+                if (diff === 'easy') {
+                    let st = rInt(5, 15), stp = rInt(3, 7);
+                    for(let i=0; i<4; i++) seq.push(st + (i*stp));
+                    ans = st + (4*stp);
+                    text = `Find the next number:<br><span class="text-2xl tracking-widest text-white mt-2 inline-block">${seq.join(', ')}, ?</span>`;
+                    exp = `The sequence adds ${stp} at each step. Next is ${seq[3]} + ${stp} = ${ans}.`;
+                } else {
+                    let aSt = rInt(2, 10), aStp = rInt(2, 5), bSt = rInt(50, 90), bStp = -rInt(3, 8);
+                    for(let i=0; i<3; i++) { seq.push(aSt + (i*aStp)); seq.push(bSt + (i*bStp)); }
+                    ans = aSt + (3*aStp);
+                    text = `Find the next number in this interleaved sequence:<br><span class="text-2xl tracking-widest text-white mt-2 inline-block">${seq.join(', ')}, ?</span>`;
+                    exp = `Two alternating sequences.\nSeq A (pos 1,3,5): adds ${aStp}.\nSeq B (pos 2,4,6): subtracts ${Math.abs(bStp)}.\nNext pos is 7 (Seq A): ${seq[4]} + ${aStp} = ${ans}.`;
+                }
+                return { conceptId: 'Interleaved_Sequences', text, options: generateOptions(ans, 4), answer: ans.toString(), explanation: exp };
+            },
+            (diff) => { // 3. Logical Syllogisms
+                let vars = [["cats", "animals", "Fluffy"], ["cars", "vehicles", "Mustang"], ["squares", "rectangles", "Shape A"]];
+                let v = rItem(vars);
+                let text = `Premise 1: All ${v[0]} are ${v[1]}.<br>Premise 2: ${v[2]} is a ${v[0]}.<br>Conclusion: ${v[2]} is an ${v[1].slice(0,v[1].length-1)}.<br><br>Is this conclusion logically valid?`;
+                let exp = `Yes, via Modus Ponens deduction. If A is a subset of B, and C is in A, then C is in B.`;
+                let ans = "Valid";
+                if (diff === 'hard' || diff === 'expert') {
+                    text = `Premise 1: All ${v[0]} are ${v[1]}.<br>Premise 2: ${v[2]} is an ${v[1].slice(0,v[1].length-1)}.<br>Conclusion: ${v[2]} is a ${v[0]}.<br><br>Is this conclusion logically valid?`;
+                    exp = `Invalid. This is the fallacy of affirming the consequent. Being in the broader category (${v[1]}) does not guarantee membership in the specific sub-category (${v[0]}).`;
+                    ans = "Invalid";
+                }
+                return { conceptId: 'Logical_Deduction', text, options: ["Valid", "Invalid", "Uncertain", "Contradictory"], answer: ans, explanation: exp };
+            },
+            (diff) => { // 4. Ratios
+                let r1 = rInt(2, 5), r2 = rInt(r1+1, 8), mult = rInt(10, 30);
+                let total = (r1 + r2) * mult;
+                let ans = (diff === 'easy' || diff === 'medium') ? (r1 * mult) : ((r2 - r1) * mult);
+                let text = (diff === 'easy' || diff === 'medium') 
+                    ? `A sum of $${total} is split in the ratio ${r1}:${r2}. What is the smaller share?`
+                    : `A sum of $${total} is divided in the ratio ${r1}:${r2}. How much MORE does the larger share get than the smaller share?`;
+                let exp = `Total parts = ${r1} + ${r2} = ${r1+r2}.\nValue of 1 part = $${total} / ${r1+r2} = $${mult}.\n`;
+                exp += (diff === 'easy' || diff === 'medium') ? `Smaller share = ${r1} parts = ${r1} * ${mult} = ${ans}.` : `Difference in parts = ${r2} - ${r1} = ${r2-r1}.\nDifference value = ${r2-r1} * ${mult} = ${ans}.`;
+                return { conceptId: 'Proportional_Ratios', text, options: generateOptions(ans, 4), answer: ans.toString(), explanation: exp };
+            },
+            (diff) => { // 5. Speed/Distance
+                let speedKMH = rItem([36, 54, 72, 90]);
+                let speedMS = speedKMH * (5/18);
+                let lenTrain = rInt(10, 25) * 10;
+                let lenBridge = (diff === 'hard' || diff === 'expert') ? rInt(10, 20) * 10 : 0;
+                let totalDist = lenTrain + lenBridge;
+                let ans = totalDist / speedMS;
+                let text = `A ${lenTrain}m long train is moving at ${speedKMH} km/hr. `;
+                text += (lenBridge > 0) ? `How many seconds will it take to completely cross a ${lenBridge}m long bridge?` : `How many seconds will it take to pass a stationary pole?`;
+                let exp = `1. Convert Speed to m/s: ${speedKMH} * (5/18) = ${speedMS} m/s.\n2. Total Distance to clear: ${lenTrain}` + (lenBridge > 0 ? ` (Train) + ${lenBridge} (Bridge) = ${totalDist}m.` : `m.`);
+                exp += `\n3. Time = Distance / Speed = ${totalDist} / ${speedMS} = ${ans}s.`;
+                return { conceptId: 'Kinematic_Speed', text, options: generateOptions(ans, 4), answer: ans.toString(), explanation: exp };
+            },
+            (diff) => { // 6. Profit/Loss
+                let cp = rInt(5, 25) * 20;
+                let pct = rItem([10, 20, 25, 40, 50]);
+                let sp = cp * (1 + (pct/100));
+                let ans, text, exp;
+                if (diff === 'easy' || diff === 'medium') {
+                    ans = sp; text = `An item bought for $${cp} is sold at a ${pct}% profit. What is the selling price?`;
+                    exp = `Profit = ${pct}% of ${cp} = $${cp * (pct/100)}.\nSelling Price = CP + Profit = ${cp} + ${cp * (pct/100)} = ${ans}.`;
+                } else {
+                    ans = cp; text = `By selling an article for $${sp}, a merchant makes a profit of ${pct}%. What was the original cost price?`;
+                    exp = `Let Cost Price = CP.\nSelling Price = CP * (1 + ${pct}/100).\n${sp} = CP * ${(1 + pct/100).toFixed(2)}\nCP = ${sp} / ${(1 + pct/100).toFixed(2)} = ${ans}.`;
+                }
+                return { conceptId: 'Financial_Margins', text, options: generateOptions(ans, 4), answer: ans.toString(), explanation: exp };
+            },
+            (diff) => { // 7. Age Math
+                let x = rInt(4, 12); 
+                let m = rItem([3, 4, 5]); 
+                let father = x * m;
+                let ans = father;
+                let text = `A father is ${m} times as old as his son. If the son's present age is ${x}, what is the father's age?`;
+                let exp = `Father = Son * ${m} = ${x} * ${m} = ${ans}.`;
+                if(diff === 'hard' || diff === 'expert') {
+                    let y = rInt(10, 20);
+                    let futureF = father + y; let futureS = x + y;
+                    text = `A father is ${m} times as old as his son. In ${y} years, the father will be ${futureF} and the son will be ${futureS}. What is the father's present age?`;
+                    exp = `Let son = S, father = F.\nF = ${m}S.\nIn ${y} years, F + ${y} = ${futureF}.\nF = ${futureF} - ${y} = ${ans}.`;
+                }
+                return { conceptId: 'Temporal_Ages', text, options: generateOptions(ans, 4), answer: ans.toString(), explanation: exp };
+            },
+            (diff) => { // 8. Probability
+                let r = rInt(3, 8), b = rInt(2, 6);
+                let tot = r + b;
+                let text = `A bag contains ${r} Red and ${b} Blue marbles. What is the probability of drawing a Red marble?`;
+                let ans = `${r}/${tot}`;
+                let exp = `Favorable outcomes (Red) = ${r}.\nTotal outcomes = ${tot}.\nProbability = ${r}/${tot}.`;
+                if (diff === 'hard' || diff === 'expert') {
+                    let num = r * (r - 1), den = tot * (tot - 1);
+                    text = `A bag contains ${r} Red and ${b} Blue marbles. If TWO marbles are drawn sequentially without replacement, what is the probability BOTH are Red? (Unsimplified)`;
+                    ans = `${num}/${den}`;
+                    exp = `Draw 1 (Red): ${r}/${tot}\nDraw 2 (Red): ${r-1}/${tot-1}\nCombined = (${r} * ${r-1}) / (${tot} * ${tot-1}) = ${num}/${den}.`;
+                    return { conceptId: 'Sequential_Probability', text, options: [ans, `${r*b}/${den}`, `${r}/${tot}`, `${r*2}/${tot*2}`], answer: ans, explanation: exp };
+                }
+                return { conceptId: 'Simple_Probability', text, options: [ans, `${b}/${tot}`, `1/${tot}`, `1/2`], answer: ans, explanation: exp };
+            },
+            (diff) => { // 9. Work & Time
+                let a = rItem([10, 12, 15, 20]);
+                let b = rItem([15, 20, 30, 60]);
+                // Ensure nice integer result for together time
+                while((a*b) % (a+b) !== 0) { b = rItem([15, 20, 30, 60]); }
+                let ans = (a*b) / (a+b);
+                let text = `Worker A can finish a job in ${a} days. Worker B can finish the same job in ${b} days. How many days will it take if they work together?`;
+                let exp = `A's 1-day work = 1/${a}. B's 1-day work = 1/${b}.\nTogether 1-day work = (1/${a}) + (1/${b}) = (${b}+${a})/(${a*b}) = ${a+b}/${a*b}.\nTotal time = reciprocal = ${a*b}/${a+b} = ${ans} days.`;
+                return { conceptId: 'Collaborative_Work', text, options: generateOptions(ans, 4, [a+b, Math.abs(a-b)]), answer: ans.toString(), explanation: exp };
+            },
+            (diff) => { // 10. Direction Sense
+                let n = rInt(10, 30), e = rInt(10, 30), s = rInt(5, n-1);
+                let vertical = n - s; 
+                // We want nice pythagorean triplets
+                let triplets = [[3,4,5], [5,12,13], [8,15,17], [7,24,25]];
+                let trip = rItem(triplets);
+                let mult = rInt(2, 5);
+                vertical = trip[0] * mult; e = trip[1] * mult; let ans = trip[2] * mult;
+                n = rInt(vertical+5, vertical+20); s = n - vertical;
+
+                let text = `A person walks ${n}m North, turns East and walks ${e}m, then turns South and walks ${s}m. How far is he from the starting point?`;
+                let exp = `Net North movement = ${n} - ${s} = ${vertical}m.\nNet East movement = ${e}m.\nUsing Pythagorean theorem: √(${vertical}² + ${e}²) = √(${vertical*vertical} + ${e*e}) = √${ans*ans} = ${ans}m.`;
+                return { conceptId: 'Vector_Displacement', text, options: generateOptions(ans, 4, [n+e+s, vertical+e]), answer: ans.toString(), explanation: exp };
+            }
+        ];
+
+        const genCodeNinja = [
+            () => { // 1. Pointer Arithmetic
+                let arr = [rInt(1,9), rInt(1,9), rInt(1,9), rInt(1,9), rInt(1,9)];
+                let offset = rInt(1, 4);
+                let ans = arr[offset];
+                let code = `int arr[] = {${arr.join(', ')}};\nint *ptr = arr;\nprintf("%d", *(ptr + ${offset}));`;
+                let text = `Analyze the pointer offset:\n${formatCode(code)}\nWhat prints to the console?`;
+                let exp = `Array name 'arr' acts as a pointer to the first element (index 0). \nAdding ${offset} to the pointer moves it forward by ${offset} memory blocks.\nDereferencing *(ptr + ${offset}) accesses index ${offset}, which is ${ans}.`;
+                return { conceptId: 'C_Pointer_Offsets', text, options: generateOptions(ans, 4, [arr[offset-1], arr[0]+offset]), answer: ans.toString(), explanation: exp };
+            },
+            () => { // 2. Pre vs Post Increment
+                let a = rInt(2, 5), b = rInt(2, 5);
+                let ans = a + (b + 1);
+                let code = `int a = ${a}, b = ${b};\nint x = a++;\nint y = ++b;\nprintf("%d", x + y);`;
+                let text = `Evaluate the increment operations:\n${formatCode(code)}\nWhat prints to the console?`;
+                let exp = `1. 'x = a++' is POST-increment. 'x' gets original value (${a}), then 'a' becomes ${a+1}.\n2. 'y = ++b' is PRE-increment. 'b' becomes ${b+1}, then 'y' gets new value (${b+1}).\n3. x + y = ${a} + ${b+1} = ${ans}.`;
+                return { conceptId: 'C_Increment_Evaluation', text, options: generateOptions(ans, 4, [a+b, (a+1)+(b+1), a+1+b]), answer: ans.toString(), explanation: exp };
+            },
+            () => { // 3. Loop Termination (Off-by-one)
+                let start = rInt(0, 2), end = rInt(4, 7);
+                let ans = end; 
+                let code = `int i = ${start};\nwhile (i < ${end}) {\n    i++;\n}\nprintf("%d", i);`;
+                let text = `Trace the loop termination condition:\n${formatCode(code)}\nWhat is the final value of 'i'?`;
+                let exp = `The loop runs as long as i < ${end}.\nWhen i becomes ${end}, the condition (${end} < ${end}) is FALSE.\nThe loop terminates, leaving 'i' exactly at ${ans}.`;
+                return { conceptId: 'C_Loop_Boundaries', text, options: generateOptions(ans, 4, [end-1, end+1, start]), answer: ans.toString(), explanation: exp };
+            },
+            () => { // 4. Switch Fallthrough
+                let v1 = rInt(1,3), v2 = rInt(1,3), v3 = rInt(1,3);
+                let ans = v1 + v2 + v3;
+                let code = `int val = 0;\nswitch(1) {\n    case 1: val += ${v1};\n    case 2: val += ${v2};\n    case 3: val += ${v3};\n}\nprintf("%d", val);`;
+                let text = `Trace the switch statement:\n${formatCode(code)}\nWhat is printed?`;
+                let exp = `C switch statements require explicit 'break' keywords.\nSince 'case 1' executes (val = ${v1}), it FALLS THROUGH to 'case 2' (val = ${v1}+${v2}) and then 'case 3' (val = ${v1+v2}+${v3}).\nTotal = ${ans}.`;
+                return { conceptId: 'C_Switch_Fallthrough', text, options: generateOptions(ans, 4, [v1, v1+v2]), answer: ans.toString(), explanation: exp };
+            },
+            () => { // 5. Bitwise Math
+                let a = rItem([3, 5, 6, 9]); // small ints
+                let b = rItem([2, 4, 8, 10]);
+                let andRes = a & b;
+                let xorRes = a ^ b;
+                let ans = andRes + xorRes;
+                let code = `int a = ${a}; // bin: ${a.toString(2)}\nint b = ${b}; // bin: ${b.toString(2)}\nint res = (a & b) + (a ^ b);\nprintf("%d", res);`;
+                let text = `Evaluate the bitwise logic:\n${formatCode(code)}\nWhat is printed?`;
+                let exp = `1. Bitwise AND (a & b) = ${andRes}.\n2. Bitwise XOR (a ^ b) = ${xorRes}.\n3. Result = ${andRes} + ${xorRes} = ${ans}.`;
+                return { conceptId: 'C_Bitwise_Logic', text, options: generateOptions(ans, 4, [a|b, a+b]), answer: ans.toString(), explanation: exp };
+            },
+            () => { // 6. Scope Shadowing
+                let a = rInt(10, 20), b = rInt(30, 40), c = rInt(50, 60);
+                let code = `int x = ${a};\n{\n    int x = ${b};\n    {\n        int x = ${c};\n    }\n    printf("%d", x);\n}`;
+                let text = `Analyze variable shadowing:\n${formatCode(code)}\nWhat is printed?`;
+                let ans = b;
+                let exp = `C uses block scope {}.\nThe innermost block creates a new 'x' (${c}) but immediately destroys it upon closing '}'.\nThe printf is inside the middle block, where the local 'x' is ${b}. It shadows the outer 'x' (${a}).`;
+                return { conceptId: 'C_Scope_Shadowing', text, options: generateOptions(ans, 4, [a, c]), answer: ans.toString(), explanation: exp };
+            },
+            () => { // 7. Macro Expansion Trick
+                let a = rInt(2, 4), b = rInt(2, 4), c = rInt(2, 4);
+                let ans = a + (b * c);
+                let code = `#define MULT(x, y) x * y\n\nint main() {\n    int res = MULT(${a} + ${b}, ${c});\n    printf("%d", res);\n}`;
+                let text = `Trace the preprocessor macro:\n${formatCode(code)}\nWhat is printed?`;
+                let exp = `Macros do raw text substitution, NOT mathematical evaluation.\n'MULT(${a} + ${b}, ${c})' expands strictly to:\n${a} + ${b} * ${c}.\nDue to operator precedence (BODMAS), multiplication happens first: ${b} * ${c} = ${b*c}. Then ${a} + ${b*c} = ${ans}.`;
+                return { conceptId: 'C_Macro_Substitution', text, options: generateOptions(ans, 4, [(a+b)*c]), answer: ans.toString(), explanation: exp };
+            },
+            () => { // 8. Sizeof Operator
+                let len = rInt(5, 10);
+                let ans = len * 4; 
+                let code = `int arr[${len}];\nprintf("%d", sizeof(arr));`;
+                let text = `Determine memory allocation size (Assuming 32-bit/4-byte ints):\n${formatCode(code)}\nWhat is printed?`;
+                let exp = `When applied directly to an array identifier (not decayed to pointer), 'sizeof' returns the total bytes allocated.\nArray length = ${len}. Size of one int = 4 bytes.\nTotal size = ${len} * 4 = ${ans}.`;
+                return { conceptId: 'C_Memory_Sizeof', text, options: generateOptions(ans, 4, [len, len*8, 4]), answer: ans.toString(), explanation: exp };
+            },
+            () => { // 9. Ternary Operator Nesting
+                let a = rInt(5, 10), b = rInt(1, 4);
+                let code = `int a = ${a}, b = ${b};\nint res = (a > b) ? (a == b ? 1 : 2) : 3;\nprintf("%d", res);`;
+                let text = `Evaluate nested ternaries:\n${formatCode(code)}\nWhat is printed?`;
+                let ans = 2;
+                let exp = `1. Evaluates (a > b) -> (${a} > ${b}), which is TRUE.\n2. Enters true branch: (a == b ? 1 : 2).\n3. Evaluates (${a} == ${b}), which is FALSE.\n4. Resolves to 2.`;
+                return { conceptId: 'C_Ternary_Logic', text, options: generateOptions(ans, 4, [1, 3, a]), answer: ans.toString(), explanation: exp };
+            },
+            () => { // 10. Integer Division Truncation
+                let num = rItem([7, 9, 11, 15]);
+                let den = 2;
+                let ans = Math.floor(num/den) * den;
+                let code = `int val = (${num} / ${den}) * ${den};\nprintf("%d", val);`;
+                let text = `Trace integer arithmetic:\n${formatCode(code)}\nWhat is printed?`;
+                let exp = `In C, integer division truncates decimals.\n${num} / ${den} = ${Math.floor(num/den)} (not ${num/den}).\nThen multiply by ${den}: ${Math.floor(num/den)} * ${den} = ${ans}.`;
+                return { conceptId: 'C_Integer_Truncation', text, options: generateOptions(ans, 4, [num, num%den]), answer: ans.toString(), explanation: exp };
+            }
+        ];
+
+        function generateUniqueQuestionSet(mode, difficulty) {
+            const set = [];
+            const usedConcepts = new Set();
+            const sourceGens = mode === 'aptitude' ? [...genAptitude] : [...genCodeNinja];
+            
+            // Randomize generator order
+            sourceGens.sort(() => 0.5 - Math.random());
+
+            // Strict loop to guarantee 10 unique concepts per game
+            let attempts = 0;
+            while (set.length < TOTAL_QUESTIONS && attempts < 100) {
+                for (let gen of sourceGens) {
+                    if (set.length >= TOTAL_QUESTIONS) break;
+                    let candidate = gen(difficulty);
+                    if (!usedConcepts.has(candidate.conceptId)) {
+                        set.push(candidate);
+                        usedConcepts.add(candidate.conceptId);
+                    }
+                }
+                attempts++;
+            }
+            return set;
+        }
+
+        const elModeSelect = document.getElementById('view-mode-select');
+        const elAptSetup = document.getElementById('view-aptitude-setup');
+        const elGame = document.getElementById('view-game');
+        const elSummary = document.getElementById('view-summary');
+        
+        function selectMode(m) {
+            state.mode = m;
+            elModeSelect.classList.add('hidden');
+            if (m === 'aptitude') {
+                elAptSetup.classList.remove('hidden');
+                document.getElementById('game-mode-tag').innerText = "Aptitude Arena";
+                document.getElementById('game-mode-tag').className = "text-neon-purple uppercase tracking-widest text-xs px-3 py-1 rounded bg-white/5 border border-white/10";
+            } else {
+                document.getElementById('game-mode-tag').innerText = "Code Ninja";
+                document.getElementById('game-mode-tag').className = "text-neon-orange uppercase tracking-widest text-xs px-3 py-1 rounded bg-white/5 border border-white/10";
+                startCodeNinjaGame();
+            }
+        }
+
+        function resetToHome() {
+            clearInterval(state.timer);
+            state.isTransitioning = false;
+            elModeSelect.classList.remove('hidden');
+            elAptSetup.classList.add('hidden');
+            elGame.classList.add('hidden');
+            elSummary.classList.add('hidden');
+        }
+
+        // Setup difficulty buttons
+        document.getElementById('difficulty-selector').addEventListener('click', (e) => {
+            const btn = e.target.closest('.diff-btn');
+            if (!btn) return;
+            document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active', 'border-white', 'shadow-md'));
+            btn.classList.add('active', 'border-white', 'shadow-md');
+            state.difficulty = btn.dataset.diff;
+        });
+
+        function startAptitudeGame() {
+            state.questions = generateUniqueQuestionSet('aptitude', state.difficulty);
+            initGameState();
+            elAptSetup.classList.add('hidden');
+            elGame.classList.remove('hidden');
+            loadQuestion();
+        }
+
+        function startCodeNinjaGame() {
+            state.difficulty = 'ninja'; 
+            state.questions = generateUniqueQuestionSet('codeninja', 'ninja');
+            initGameState();
+            elGame.classList.remove('hidden');
+            loadQuestion();
+        }
+
+        function initGameState() {
+            state.currentIndex = 0;
+            state.score = 0;
+            state.userAnswers = [];
+            state.isTransitioning = false;
+        }
+
+        function loadQuestion() {
+            state.isTransitioning = false;
+            const q = state.questions[state.currentIndex];
+            document.getElementById('game-progress').innerText = `${state.currentIndex + 1}/${TOTAL_QUESTIONS}`;
+            document.getElementById('question-concept-tag').innerText = `ID: ${q.conceptId.replace(/_/g, ' ')}`;
+            document.getElementById('question-content').innerHTML = q.text; // Safe because of formatCode() pipeline
+            
+            const optsContainer = document.getElementById('options-container');
+            optsContainer.innerHTML = '';
+            
+            q.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn w-full text-left p-4 rounded-xl border border-white/10 bg-black/40 hover:bg-white/10 hover:border-white/40 transition-all text-white font-mono shadow-sm flex items-center gap-4 group relative overflow-hidden';
+                btn.innerHTML = `<span class="opt-label bg-white/10 text-gray-400 group-hover:text-white group-hover:bg-white/20 px-3 py-1.5 rounded text-sm transition-colors z-10">${String.fromCharCode(65 + idx)}</span> <span class="z-10">${escapeHtml(opt)}</span>`;
+                btn.dataset.val = opt;
+                btn.onclick = () => submitAnswer(btn, opt);
+                optsContainer.appendChild(btn);
+            });
+
+            startTimer();
+        }
+
+        function startTimer() {
+            clearInterval(state.timer);
+            const totalTime = state.mode === 'aptitude' ? TIMER_APTITUDE[state.difficulty] : TIMER_CODENINJA;
+            state.timeLeft = totalTime;
+            
+            const bar = document.getElementById('timer-bar');
+            const text = document.getElementById('timer-text');
+            
+            bar.style.transition = 'none';
+            bar.style.width = '100%';
+            bar.classList.remove('bg-neon-red');
+            bar.classList.add('bg-white');
+            text.innerText = state.timeLeft.toFixed(1) + 's';
+            text.classList.remove('text-neon-red');
+            void bar.offsetWidth; // trigger reflow
+            bar.style.transition = 'width 1s linear';
+
+            state.timer = setInterval(() => {
+                state.timeLeft -= 1;
+                bar.style.width = `${(state.timeLeft / totalTime) * 100}%`;
+                text.innerText = Math.max(0, state.timeLeft).toFixed(1) + 's';
+
+                if (state.timeLeft <= (totalTime * 0.25)) {
+                    text.classList.add('text-neon-red');
+                    bar.classList.remove('bg-white');
+                    bar.classList.add('bg-neon-red');
+                }
+
+                if (state.timeLeft <= 0) {
+                    clearInterval(state.timer);
+                    handleTimeout();
+                }
+            }, 1000);
+        }
+
+        function submitAnswer(clickedBtn, selectedOpt) {
+            if(state.isTransitioning) return;
+            state.isTransitioning = true;
+            clearInterval(state.timer); // Instantly freeze the timer
+
+            const q = state.questions[state.currentIndex];
+            const isCorrect = selectedOpt === q.answer;
+            
+            if (isCorrect) state.score++;
+
+            // Lock all buttons
+            const allBtns = document.querySelectorAll('.option-btn');
+            allBtns.forEach(b => {
+                b.disabled = true;
+                b.classList.remove('hover:bg-white/10', 'hover:border-white/40', 'cursor-pointer');
+                b.classList.add('cursor-default', 'opacity-70');
+            });
+
+            // Apply strict visual feedback
+            if (isCorrect) {
+                clickedBtn.classList.remove('bg-black/40', 'border-white/10', 'opacity-70');
+                clickedBtn.classList.add('!bg-green-900/60', '!border-green-500', '!text-green-400', 'shadow-[0_0_15px_rgba(34,197,94,0.4)]', '!opacity-100');
+                clickedBtn.querySelector('.opt-label').classList.add('!bg-green-500/30', '!text-green-400');
+            } else {
+                clickedBtn.classList.remove('bg-black/40', 'border-white/10', 'opacity-70');
+                clickedBtn.classList.add('!bg-red-900/60', '!border-red-500', '!text-red-400', 'shadow-[0_0_15px_rgba(239,68,68,0.4)]', '!opacity-100');
+                clickedBtn.querySelector('.opt-label').classList.add('!bg-red-500/30', '!text-red-400');
+                
+                // Expose the real correct answer
+                const correctBtn = Array.from(allBtns).find(b => b.dataset.val === q.answer);
+                if(correctBtn) {
+                    correctBtn.classList.remove('bg-black/40', 'border-white/10', 'opacity-70');
+                    correctBtn.classList.add('!bg-green-900/60', '!border-green-500', '!text-green-400', '!opacity-100');
+                    correctBtn.querySelector('.opt-label').classList.add('!bg-green-500/30', '!text-green-400');
+                }
+            }
+
+            recordAnswer(q, selectedOpt, isCorrect);
+
+            // Wait exactly 1500ms before auto-advancing
+            setTimeout(() => {
+                advanceToNext();
+            }, 1500);
+        }
+
+        function handleTimeout() {
+            if(state.isTransitioning) return;
+            state.isTransitioning = true;
+            
+            const q = state.questions[state.currentIndex];
+            
+            const allBtns = document.querySelectorAll('.option-btn');
+            allBtns.forEach(b => {
+                b.disabled = true;
+                b.classList.remove('hover:bg-white/10', 'hover:border-white/40', 'cursor-pointer');
+                b.classList.add('cursor-default', 'opacity-70');
+            });
+
+            // Reveal correct answer on timeout
+            const correctBtn = Array.from(allBtns).find(b => b.dataset.val === q.answer);
+            if(correctBtn) {
+                correctBtn.classList.remove('bg-black/40', 'border-white/10', 'opacity-70');
+                correctBtn.classList.add('!bg-green-900/60', '!border-green-500', '!text-green-400', 'shadow-[0_0_15px_rgba(34,197,94,0.4)]', '!opacity-100');
+                correctBtn.querySelector('.opt-label').classList.add('!bg-green-500/30', '!text-green-400');
+            }
+
+            recordAnswer(q, "[TIMEOUT]", false);
+
+            setTimeout(() => {
+                advanceToNext();
+            }, 1500);
+        }
+
+        function recordAnswer(q, selected, isCorrect) {
+            state.userAnswers.push({
+                question: q.text,
+                concept: q.conceptId,
+                selected: selected,
+                correct: q.answer,
+                isCorrect: isCorrect,
+                explanation: q.explanation
+            });
+        }
+
+        function advanceToNext() {
+            state.currentIndex++;
+            if (state.currentIndex < TOTAL_QUESTIONS) {
+                loadQuestion();
+            } else {
+                showSummary();
+            }
+        }
+
+        function showSummary() {
+            elGame.classList.add('hidden');
+            elSummary.classList.remove('hidden');
+            
+            document.getElementById('summary-score').innerText = `${state.score}/${TOTAL_QUESTIONS}`;
+            
+            let meta = state.mode === 'aptitude' ? `Aptitude Arena | Tier: ${state.difficulty.toUpperCase()}` : `Code Ninja | C-Logic`;
+            document.getElementById('summary-meta-text').innerText = meta;
+            
+            let icon = document.getElementById('summary-icon');
+            if(state.score >= 8) { icon.className = "fa-solid fa-trophy text-5xl mb-4 text-neon-green drop-shadow-[0_0_15px_rgba(0,255,102,0.8)]"; }
+            else if(state.score >= 5) { icon.className = "fa-solid fa-medal text-5xl mb-4 text-neon-blue drop-shadow-[0_0_15px_rgba(0,243,255,0.8)]"; }
+            else { icon.className = "fa-solid fa-triangle-exclamation text-5xl mb-4 text-neon-red drop-shadow-[0_0_15px_rgba(255,0,85,0.8)]"; }
+            
+            const container = document.getElementById('review-container');
+            container.innerHTML = '';
+            
+            state.userAnswers.forEach((ans, idx) => {
+                const isCorrect = ans.isCorrect;
+                const color = isCorrect ? 'text-neon-green' : 'text-neon-red';
+                const iconCls = isCorrect ? 'fa-check' : 'fa-xmark';
+                const border = isCorrect ? 'border-neon-green/30' : 'border-neon-red/30';
+                
+                let html = `
+                    <div class="rounded-xl border ${border} bg-black/40 p-5 shadow-lg">
+                        <div class="flex items-start gap-4 mb-4">
+                            <div class="mt-1 ${color} text-xl"><i class="fa-solid ${iconCls}"></i></div>
+                            <div class="flex-grow w-full overflow-hidden">
+                                <div class="text-xs text-gray-500 font-mono mb-2 uppercase tracking-wider">Node ${idx+1} | ${ans.concept.replace(/_/g, ' ')}</div>
+                                <div class="text-sm text-gray-200 mb-4">${ans.question}</div>
+                                
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm font-mono mb-4 w-full">
+                                    <div class="bg-black/60 p-3 rounded-lg border border-white/5 break-all">
+                                        <span class="text-gray-500 block mb-1 text-xs">Your Output:</span> 
+                                        <span class="${ans.selected === '[TIMEOUT]' ? 'text-gray-400' : color}">${escapeHtml(ans.selected)}</span>
+                                    </div>
+                                    <div class="bg-black/60 p-3 rounded-lg border border-white/5 break-all">
+                                        <span class="text-gray-500 block mb-1 text-xs">Expected:</span> 
+                                        <span class="text-white">${escapeHtml(ans.correct)}</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-neon-dark/80 border border-white/10 rounded-lg p-4 text-sm mt-2 relative overflow-hidden">
+                                    <div class="absolute top-0 left-0 w-1 h-full bg-neon-blue"></div>
+                                    <div class="text-xs text-neon-blue mb-2 font-bold uppercase tracking-wider pl-2"><i class="fa-solid fa-microchip mr-2"></i>Logic Trace</div>
+                                    <div class="text-gray-300 font-mono text-xs whitespace-pre-wrap leading-relaxed pl-2">${ans.explanation}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += html;
+            });
+            
+            document.getElementById('btn-replay').onclick = () => {
+                elSummary.classList.add('hidden');
+                if(state.mode === 'aptitude') startAptitudeGame();
+                else startCodeNinjaGame();
+            };
+        }
+    </script>
+</body>
+</html>
